@@ -21,9 +21,9 @@ fps_time = 0
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='tf-pose-estimation Video')
-    parser.add_argument('--video', type=str, default='')
+    parser.add_argument('--video', type=str, default='/home/ivan/projects/pose2.mp4')
     parser.add_argument('--resolution', type=str, default='432x368', help='network input resolution. default=432x368')
-    parser.add_argument('--model', type=str, default='mobilenet_thin', help='cmu / mobilenet_thin / mobilenet_v2_large / mobilenet_v2_small')
+    parser.add_argument('--model', type=str, default='cmu', help='cmu / mobilenet_thin / mobilenet_v2_large / mobilenet_v2_small')
     parser.add_argument('--show-process', type=bool, default=False,
                         help='for debug purpose, if enabled, speed for inference is dropped.')
     parser.add_argument('--showBG', type=bool, default=True, help='False to show skeleton only.')
@@ -36,10 +36,15 @@ if __name__ == '__main__':
 
     if cap.isOpened() is False:
         print("Error opening video stream or file")
+    i = 0
     while cap.isOpened():
         ret_val, image = cap.read()
+        i +=1
+        if i < 1000:
+            continue
+        image_process = cv2.resize(image, (640, 368), interpolation=cv2.INTER_AREA)
 
-        humans = e.inference(image)
+        humans = e.inference(image_process, resize_to_default=False, upsample_size=8.0)
         if not args.showBG:
             image = np.zeros(image.shape)
         image = TfPoseEstimator.draw_humans(image, humans, imgcopy=False)
@@ -51,4 +56,4 @@ if __name__ == '__main__':
             break
 
     cv2.destroyAllWindows()
-logger.debug('finished+')
+    logger.debug('finished+')
